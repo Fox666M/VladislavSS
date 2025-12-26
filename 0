@@ -1,0 +1,57 @@
+#include <iostream>
+#include <string>
+#include <locale>
+#include <codecvt>
+
+class TextAnalyzer {
+    int vowels;
+    int consonants;
+    int words;
+
+    bool isVowel(wchar_t ch) {
+        std::wstring v = L"AEIOUYaeiouy"
+                         L"АЕЁИОУЫЭЮЯаеёиоуыэюя";
+        return v.find(ch) != std::wstring::npos;
+    }
+
+public:
+    TextAnalyzer() : vowels(0), consonants(0), words(0) {}
+
+    void analyze(const std::string& utf8) {
+        vowels = consonants = words = 0;
+
+        std::wstring_convert<std::codecvt_utf8_utf16<wchar_t>> conv;
+        std::wstring s = conv.from_bytes(utf8);
+
+        bool inWord = false;
+
+        for (wchar_t ch : s) {
+            if (std::iswalpha(ch)) {
+                if (!inWord) {
+                    inWord = true;
+                    ++words;
+                }
+                if (isVowel(ch)) ++vowels;
+                else ++consonants;
+            } else {
+                inWord = false;
+            }
+        }
+    }
+
+    void print() const {
+        std::wcout << L"Гласных:   " << vowels     << L'\n';
+        std::wcout << L"Согласных: " << consonants << L'\n';
+        std::wcout << L"Слов:      " << words      << L'\n';
+    }
+};
+
+int main() {
+    std::setlocale(LC_ALL, "");
+    std::string line;
+    std::getline(std::cin, line);
+
+    TextAnalyzer ta;
+    ta.analyze(line);
+    ta.print();
+}
